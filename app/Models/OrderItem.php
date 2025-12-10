@@ -4,8 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Product extends Model
+class OrderItem extends Model
 {
     use HasFactory;
 
@@ -15,12 +16,11 @@ class Product extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'name',
-        'description',
+        'order_id',
+        'product_id',
+        'quantity',
         'price',
-        'stock',
-        'image_url',
-        'status',
+        'subtotal',
     ];
 
     /**
@@ -31,29 +31,28 @@ class Product extends Model
     protected function casts(): array
     {
         return [
+            'quantity' => 'integer',
             'price' => 'decimal:2',
-            'stock' => 'integer',
-            'status' => 'string',
+            'subtotal' => 'decimal:2',
         ];
     }
 
     /**
-     * Check if product is available
+     * Get the order that owns the order item.
      */
-    public function isAvailable(): bool
+    public function order(): BelongsTo
     {
-        return $this->status === 'active' && $this->stock > 0;
+        return $this->belongsTo(Order::class);
     }
 
     /**
-     * Check if product has sufficient stock
+     * Get the product for the order item.
      */
-    public function hasStock(int $quantity): bool
+    public function product(): BelongsTo
     {
-        return $this->stock >= $quantity;
+        return $this->belongsTo(Product::class);
     }
 }
-
 
 
 

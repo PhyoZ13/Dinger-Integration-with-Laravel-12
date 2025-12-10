@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\API\Auth\AuthController;
+use App\Http\Controllers\API\OrderController;
+use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +19,9 @@ Route::prefix('v1')->group(function () {
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{id}', [ProductController::class, 'show']);
 
+    // Payment callback (public - called by Dinger)
+    Route::post('/payment/callback', [PaymentController::class, 'dingerCallback']);
+
     // Protected routes
     Route::middleware('auth:sanctum')->group(function () {
         // Auth routes
@@ -29,7 +34,17 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('products', ProductController::class)->except(['index', 'show']);
 
         // Order routes
-        // Will be defined later
+        Route::prefix('orders')->group(function () {
+            Route::get('/', [OrderController::class, 'index']);
+            Route::post('/', [OrderController::class, 'store']);
+            Route::get('/{orderId}', [OrderController::class, 'show']);
+        });
+
+        // Payment routes
+        Route::prefix('payment')->group(function () {
+            Route::post('/token', [PaymentController::class, 'getPaymentToken']);
+            Route::get('/order/{orderId}', [PaymentController::class, 'getOrderDetail']);
+        });
     });
 });
 
